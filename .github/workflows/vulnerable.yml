@@ -1,4 +1,4 @@
-name: "PoC - Script Injection via step output (replicates Xbox-GDK-Samples pattern)"
+name: "PoC - Script Injection (replicates Xbox-GDK-Samples)"
 
 on:
   pull_request:
@@ -6,32 +6,21 @@ on:
 
 permissions:
   pull-requests: write
+  contents: read
 
 jobs:
   demo:
     runs-on: ubuntu-latest
     steps:
-      - name: Get PR title (simulates AI output from pr-summary-generate.yml)
-        id: generate
-        run: |
-          # In Xbox-GDK-Samples, this comes from AI model (GPT-4o-mini)
-          # Here we use the PR title directly to demonstrate the injection
-          echo "title=${{ github.event.pull_request.title }}" >> "$GITHUB_OUTPUT"
-
-      - name: Update PR (VULNERABLE - same pattern as Xbox-GDK-Samples line 159)
+      - name: "VULNERABLE - Same pattern as Xbox-GDK-Samples line 159"
         uses: actions/github-script@v7
         with:
           script: |
-            // VULNERABLE: ${{ }} interpolated directly into JS string
-            // Same pattern as pr-summary-generate.yml line 159:
-            // const title = '${{ steps.generate.outputs.title }}';
-            const title = '${{ steps.generate.outputs.title }}';
-            console.log('Title: ' + title);
-
-            // If this executes, injection worked:
+            const title = '${{ github.event.pull_request.title }}';
+            console.log('Title value: ' + title);
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '✅ Normal execution - no injection detected'
+              body: 'Workflow executed. Title was: ' + title
             });
