@@ -2,7 +2,6 @@ name: "PoC - Script Injection (replicates Xbox-GDK-Samples)"
 
 on:
   pull_request:
-    types: [opened, edited]
 
 permissions:
   pull-requests: write
